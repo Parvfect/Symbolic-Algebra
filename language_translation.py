@@ -9,7 +9,7 @@ from keras.initializers import *
 import tensorflow as tf
 import time, random
 
-file_name = ""
+file_name = "fra.txt"
 
 # Hyperparameters
 batch_size = 64
@@ -24,9 +24,9 @@ target_characters = set()
 
 def encode_data(file_name):
     with open(f'{file_name}', 'r', encoding='utf-8') as f:
-    lines = f.read().split('\n')
+        lines = f.read().split('\n')
 
-    for line in lines[: min(num_samples, len(lines) - 1)]:
+    for line in lines[1: min(num_samples, len(lines) - 1)]:
         input_text, target_text = line.split('\t')
         target_text = '\t' + target_text + '\n'
         input_texts.append(input_text)
@@ -107,7 +107,7 @@ def get_model_characteristics(encoder_inputs, decoder_inputs, decoder_outputs, e
     plot_model(model,show_shapes=True)
 
 def train_model():
-    model.compile(optimizer=Adam(lr=0.01. beta_1=0.9, beta_2 = 0.999, decay=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(lr=0.01, beta_1=0.9, beta_2 = 0.999, decay=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
 
     model.fit([encoder_in_data, decoder_in_data], decoder_target_data, batch_size=batch_size, epochs=50, validation_split=0.2)
 
@@ -168,7 +168,10 @@ def decode_sequence(input_seq):
         print('Decoded sentence:', decoded_sentence)
 
 def main():
-    input_texts, target_texts, input_chars, target_chars = get_data()
-    encoder_in_data, decoder_in_data, decoder_target_data = get_data_characteristics(input_texts, target_texts, input_chars, target_chars)
+    input_texts, target_texts, input_chars, target_chars = encode_data(file_name)
+    encoder_in_data, decoder_in_data, decoder_target_data = define_encoder_decoder_data(input_texts, target_texts, input_chars, target_chars)
     encoder_inputs, decoder_inputs, decoder_outputs, encoder_states, decoder_lstm, decoder_dense = process_input_sequence(num_encoder_tokens, num_decoder_tokens)
     get_model_characteristics(encoder_inputs, decoder_inputs, decoder_outputs, encoder_in_data, decoder_in_data, decoder_target_data)
+
+
+main()

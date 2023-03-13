@@ -9,6 +9,7 @@ from keras.initializers import *
 import tensorflow as tf
 import time, random
 
+file_name = ""
 
 # Hyperparameters
 batch_size = 64
@@ -21,9 +22,10 @@ target_texts = []
 input_characters = set()
 target_characters = set()
 
-def encode_data():
-    with open('fra.txt', 'r', encoding='utf-8') as f:
+def encode_data(file_name):
+    with open(f'{file_name}', 'r', encoding='utf-8') as f:
     lines = f.read().split('\n')
+
     for line in lines[: min(num_samples, len(lines) - 1)]:
         input_text, target_text = line.split('\t')
         target_text = '\t' + target_text + '\n'
@@ -50,7 +52,10 @@ def encode_data():
     print('Max sequence length for inputs:', max_encoder_seq_length)
     print('Max sequence length for outputs:', max_decoder_seq_length)
 
-def define_encoder_decoder_data():
+    return input_chars, target_chars, num_encoder_tokens, num_decoder_tokens, max_encoder_seq_length, max_decoder_seq_length
+
+def define_encoder_decoder_data(input_chars, target_chars, num_encoder_tokens, num_decoder_tokens, max_encoder_seq_length, max_decoder_seq_length):
+
     # Define data for encoder and decoder
     input_token_id = dict([(char, i) for i, char in enumerate(input_chars)])
     taget_token_id = dict([(char, i) for i, char in enumerate(target_chars)])
@@ -69,7 +74,9 @@ def define_encoder_decoder_data():
             if t > 0:
                 decoder_target_data[i, t - 1, target_token_id[char]] = 1.
 
-def process_input_sequence():
+    return encoder_in_data, decoder_in_data, decoder_target_data
+
+def process_input_sequence(num_encoder_tokens, num_decoder_tokens):
     
     encoder_inputs = Input(shape=(None, num_encoder_tokens))
     encoder = LSTM(latent_dim, return_state=True)
@@ -83,11 +90,12 @@ def process_input_sequence():
     decoder_dense = Dense(num_decoder_tokens, activation='softmax')
     decoder_outputs = decoder_dense(decoder_outputs)
 
-def get_model_characteristics():
+    return encoder_inputs, decoder_inputs, decoder_outputs, encoder_states, decoder_lstm, decoder_dense
+
+def get_model_characteristics(encoder_inputs, decoder_inputs, decoder_outputs, encoder_in_data, decoder_in_data, decoder_target_data):
 
     # Final Model
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
-
     model.summary()
 
     #Model data Shape
@@ -159,3 +167,8 @@ def decode_sequence(input_seq):
         print('Input sentence:', input_texts[seq_index])
         print('Decoded sentence:', decoded_sentence)
 
+def main():
+    input_texts, target_texts, input_chars, target_chars = get_data()
+    encoder_in_data, decoder_in_data, decoder_target_data = get_data_characteristics(input_texts, target_texts, input_chars, target_chars)
+    encoder_inputs, decoder_inputs, decoder_outputs, encoder_states, decoder_lstm, decoder_dense = process_input_sequence(num_encoder_tokens, num_decoder_tokens)
+    get_model_characteristics(encoder_inputs, decoder_inputs, decoder_outputs, encoder_in_data, decoder_in_data, decoder_target_data)

@@ -19,10 +19,10 @@ num_samples = 10000
 # Vectorizing data
 input_texts = []
 target_texts = []
-input_characters = set()
-target_characters = set()
+input_chars = set()
+target_chars = set()
 
-def encode_data(file_name):
+def encode_data(file_namem, input_chars, target_chars, num_samples, input_texts, target_texts):
     with open(f'{file_name}', 'r', encoding='utf-8') as f:
         lines = f.read().split('\n')
 
@@ -168,7 +168,7 @@ def decode_sequence(input_seq):
         print('Decoded sentence:', decoded_sentence)
 
 def main():
-    input_texts, target_texts, input_chars, target_chars = encode_data(file_name)
+    input_texts, target_texts, input_chars, target_chars = encode_data(file_name, input_chars, target_chars, input_texts, target_texts)
     encoder_in_data, decoder_in_data, decoder_target_data = define_encoder_decoder_data(input_texts, target_texts, input_chars, target_chars)
     encoder_inputs, decoder_inputs, decoder_outputs, encoder_states, decoder_lstm, decoder_dense = process_input_sequence(num_encoder_tokens, num_decoder_tokens)
     get_model_characteristics(encoder_inputs, decoder_inputs, decoder_outputs, encoder_in_data, decoder_in_data, decoder_target_data)
